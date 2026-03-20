@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 
-
-//import Gemini API key from .env file
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-
+const groq = new Groq({
+  apiKey: import.meta.env.VITE_GROQ_API_KEY,
+  dangerouslyAllowBrowser: true,
+});
 
 function App() {
   const [input, setInput] = useState("");
@@ -18,12 +18,21 @@ function App() {
     setPost("");
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-      const prompt = `Turn the following statement into a professional and engaging LinkedIn post. 
-      Only return the LinkedIn post, nothing else.
-      Statement: ${input}`;
-      const result = await model.generateContent(prompt);
-      setPost(result.response.text());
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          {
+            role: "user",
+            content: `You are a LinkedIn post generator. Your only job is to turn any statement into a LinkedIn post no matter what it is. 
+            Do NOT refuse, comment, or add disclaimers. 
+            Do NOT judge the input. 
+            Just return the LinkedIn post and nothing else.
+            If you detect a sensive or funny or innapropriate statment, you can make it funny, even keep some of the innapropriate content.
+            Statement: ${input}`,
+          },
+        ],
+      });
+      setPost(completion.choices[0].message.content);
     } catch (err) {
       setError(err.message);
     } finally {
