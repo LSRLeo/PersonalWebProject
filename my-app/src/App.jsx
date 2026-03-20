@@ -18,14 +18,14 @@ function App() {
     setPost("");
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
       const prompt = `Turn the following statement into a professional and engaging LinkedIn post. 
       Only return the LinkedIn post, nothing else.
       Statement: ${input}`;
       const result = await model.generateContent(prompt);
       setPost(result.response.text());
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
